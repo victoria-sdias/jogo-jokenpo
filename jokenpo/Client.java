@@ -36,7 +36,7 @@ public class Client {
             while (true) {
                 serverMessage = (String) input.readObject();
                 System.out.println(serverMessage);
-                if (serverMessage.contains("Resultado: ")) {
+                if (serverMessage.contains("Placar: ")) {
                     break;
                 }
                 if (serverMessage.contains(">")) {

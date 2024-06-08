@@ -12,7 +12,7 @@ public class Server {
 
         // Binding = obter uma porta do Sistema Operacional
         try {
-            serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(PORT); // libera a porta "criada".
             System.out.println("Servidor disponível na porta " + PORT);
         } catch (BindException e) {
             System.out.println("Erro. A porta " + PORT + " já está em uso. Altere a configuração em...");
@@ -22,14 +22,14 @@ public class Server {
             return;
         }
 
-        Distributor distribuidor = new Distributor();
+        Distributor distribuidor = new Distributor(); // cria partidas(thead) conforme a modalidade
         distribuidor.start();
 
         while (true) {
             // Accept = esperar uma conexão de um cliente
             try {
                 System.out.println("Aguardando um cliente...");
-                clientSocket = serverSocket.accept();
+                clientSocket = serverSocket.accept(); // cria uma porta exclusiva para cada cliente.
                 Player player = new Player(clientSocket);
                 player.start();
                 distribuidor.addPlayer(player);

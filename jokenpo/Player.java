@@ -2,20 +2,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Player extends Thread {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
     private String playerName;
     private final Socket socketClient;
     ObjectInputStream input = null;
     ObjectOutputStream output = null;
     private String modality = "";
     private String lastServerMessage = null;
-    String menu = """ 
-        Digite uma das modalidades que deseja jogar: 
-        1 : Jogador vs CPU
-        2 : Jogador vs Jogador
-        >
-        """;
+    private String continueVerify = "";
+    String menu = "> Digite uma das modalidades que deseja jogar:\n1 : Jogador vs CPU\n2 : Jogador vs Jogador";
+    
 
     public Player(Socket socketClient) {
         this.socketClient = socketClient;
@@ -26,11 +27,7 @@ public class Player extends Thread {
         try {
             output = new ObjectOutputStream(this.socketClient.getOutputStream());
             input = new ObjectInputStream(this.socketClient.getInputStream());
-            this.sendMessage("""
-                **Bem vindo ao Jogo Jokenpo**
-                Digite seu nome:
-                >
-                """);
+            this.sendMessage("**Bem vindo ao Jogo Jokenpo**\n> Digite seu nome:");
             this.playerName = listen();
             do {
                 this.sendMessage(this.menu);
@@ -64,6 +61,31 @@ public class Player extends Thread {
                 }
             } while (msg == null);
             return(msg);
+    }
+
+    public void sendContinueVerifyMessage() {
+        this.executor.submit(() -> {
+            try {
+                while (true) {
+                    this.sendMessage("> Deseja continuar jogando?\nDigite sim para continuar.\nDigite exit para sair do jogo.");
+                    String response = this.listen();
+                    if (response.equalsIgnoreCase("sim") || response.equalsIgnoreCase("exit")) {
+                        this.continueVerify = response;
+                        break;
+                    }
+                    sendMessage("Resposta inválida!");
+                }
+            } catch (Exception e) {
+                System.out.println("Erro na comunicação");
+                System.out.println(e.getMessage());
+            }
+        });
+    }
+
+    public String getContinueVerifyValue() {
+        String response = this.continueVerify;
+        this.continueVerify = "";
+        return response;
     }
 
     public String getPlayerName() {
